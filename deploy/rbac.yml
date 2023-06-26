@@ -1,0 +1,72 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: telekube-system
+  labels:
+    name: telekube-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: telekube
+  namespace: telekube-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: telekube
+rules:
+- apiGroups: 
+    - apps
+  resources:
+    - pods
+    - services
+    - namespaces
+    - deployments
+    - lease
+  verbs:
+    - get
+    - watch
+    - list
+    - delete
+    - update
+    - patch
+    - create
+- apiGroups:
+    - coordination.k8s.io
+  resources:
+    - leases
+  verbs:
+    - get
+    - watch
+    - list
+    - delete
+    - update
+    - patch
+    - create
+- apiGroups:
+    - events.k8s.io
+  resources:
+    - events
+  verbs:
+    - get
+    - watch
+    - list
+    - delete
+    - update
+    - patch
+    - create
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: telekube
+subjects:
+  - kind: ServiceAccount
+    name: telekube
+    namespace: telekube-system
+roleRef:
+  kind: ClusterRole
+  name: telekube
+  apiGroup: rbac.authorization.k8s.io

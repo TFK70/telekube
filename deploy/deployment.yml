@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-controller
+  namespace: telekube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-controller
+  template:
+    metadata:
+      labels:
+        app: notification-controller
+    spec:
+      containers:
+      - name: notification-controller
+        image: notification-controller:1
+        env:
+          - name: BOT_TOKEN
+            value: <token>
+          - name: CHAT_ID
+            value: "<chat_id>"
+      serviceAccountName: telekube
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: updates-controller
+  namespace: telekube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: updates-controller
+  template:
+    metadata:
+      labels:
+        app: updates-controller
+    spec:
+      containers:
+      - name: updates-controller
+        image: updates-controller:1
+        env:
+          - name: BOT_TOKEN
+            value: <token>
+          - name: CHAT_ID
+            value: "<chat_id>"
+      serviceAccountName: telekube
