@@ -3,8 +3,8 @@ package notification_controller
 import (
 	"context"
 	"fmt"
-  "os"
-  "telekube/internal/telegram"
+	"os"
+	"telekube/internal/telegram"
 
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -19,56 +19,56 @@ import (
 )
 
 func AddToManager(mgr manager.Manager, botOpts telegram.BotOptions) error {
-  return add(mgr, newReconciler(mgr, botOpts))
+	return add(mgr, newReconciler(mgr, botOpts))
 }
 
 func newReconciler(mgr manager.Manager, botOpts telegram.BotOptions) reconcile.Reconciler {
-  bot, err := telegram.New(botOpts)
-  if err != nil {
-    klog.Errorln("Failed to create bot", err)
-    os.Exit(1)
-  }
+	bot, err := telegram.New(botOpts)
+	if err != nil {
+		klog.Errorln("Failed to create bot", err)
+		os.Exit(1)
+	}
 
-  return &ReconcileJob{client: mgr.GetClient(), scheme: mgr.GetScheme(), bot: bot}
+	return &ReconcileJob{client: mgr.GetClient(), scheme: mgr.GetScheme(), bot: bot}
 }
 
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
-  c, err := controller.New("notification-controller", mgr, controller.Options{Reconciler: r})
-  if err != nil {
-    return err
-  }
-  dep := &appsv1.Deployment{}
-  err = c.Watch(source.Kind(mgr.GetCache(), dep), &handler.EnqueueRequestForObject{})
-  if err != nil {
-    return err
-  }
+	c, err := controller.New("notification-controller", mgr, controller.Options{Reconciler: r})
+	if err != nil {
+		return err
+	}
+	dep := &appsv1.Deployment{}
+	err = c.Watch(source.Kind(mgr.GetCache(), dep), &handler.EnqueueRequestForObject{})
+	if err != nil {
+		return err
+	}
 
-  return nil
+	return nil
 }
 
 var _ reconcile.Reconciler = &ReconcileJob{}
 
 type ReconcileJob struct {
-  client client.Client
-  scheme *runtime.Scheme
-  bot telegram.Bot
+	client client.Client
+	scheme *runtime.Scheme
+	bot    telegram.Bot
 }
 
 func (r *ReconcileJob) Reconcile(context context.Context, request reconcile.Request) (reconcile.Result, error) {
-  instance := &appsv1.Deployment{}
-  err := r.client.Get(context, request.NamespacedName, instance)
-  if err != nil {
-    if errors.IsNotFound(err) {
-      return reconcile.Result{}, nil
-    }
+	instance := &appsv1.Deployment{}
+	err := r.client.Get(context, request.NamespacedName, instance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return reconcile.Result{}, nil
+		}
 
-    return reconcile.Result{}, err
-  }
+		return reconcile.Result{}, err
+	}
 
-  message := fmt.Sprintf("Deployment changed: %s/%s", instance.Namespace, instance.Name)
+	message := fmt.Sprintf("Deployment changed: %s/%s", instance.Namespace, instance.Name)
 
-  klog.Infoln(message)
-  r.bot.Send(message)
+	klog.Infoln(message)
+	r.bot.Send(message)
 
-  return reconcile.Result{}, nil
+	return reconcile.Result{}, nil
 }

@@ -3,7 +3,7 @@ package notification_controller
 import (
 	"fmt"
 	"net/http"
-  "net/url"
+	"net/url"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
@@ -37,11 +37,11 @@ func NewNotificationController(opts NotificationControllerOpts) controller.Contr
 		}
 
 		text := fmt.Sprintf("Deployment %s was %s", event.Key, eventVerbMap[int32(event.Type)])
-    url := fmt.Sprintf("%s/bot%s/sendMessage?text=%s&chat_id=%s", base_telegram_url, opts.BotToken, url.QueryEscape(text), opts.ChatId)
-    _, err := http.Get(url)
-    if err != nil {
-      return err
-    }
+		url := fmt.Sprintf("%s/bot%s/sendMessage?text=%s&chat_id=%s", base_telegram_url, opts.BotToken, url.QueryEscape(text), opts.ChatId)
+		_, err := http.Get(url)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	}
